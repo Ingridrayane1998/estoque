@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico de Movimentações</title>
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    .title {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .movimentacao-list {
+      margin-top: 20px;
+    }
+    .movimentacao-item {
+      background-color: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .movimentacao-item p {
+      font-size: 1em;
+      color: #666;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="link-voltar">Voltar para a Loja</a>
+    <h1 class="title">Histórico de Movimentações</h1>
+
+
+    <div class="movimentacao-list" id="movimentacao-list"></div>
+  </div>
+
+
+  <script>
+    // Função para carregar e exibir as movimentações salvas no localStorage
+    window.onload = function() {
+      const movimentacoes = JSON.parse(localStorage.getItem("movimentacoes")) || [];
+      const movimentacaoList = document.getElementById("movimentacao-list");
+
+
+      // Se não houver movimentações, exibe uma mensagem
+      if (movimentacoes.length === 0) {
+        movimentacaoList.innerHTML = '<p>Não há movimentações registradas.</p>';
+      } else {
+        // Exibe as movimentações
+        movimentacoes.forEach(movimentacao => {
+          const item = document.createElement("div");
+          item.classList.add("movimentacao-item");
+
+
+          item.innerHTML = `
+            <p><strong>Produto:</strong> ${movimentacao.produto}</p>
+            <p><strong>Categoria:</strong> ${movimentacao.categoria}</p>
+            <p><strong>Ação:</strong> ${movimentacao.tipo}</p>
+            <p><strong>Quantidade:</strong> ${movimentacao.quantidade}</p>
+            <p><strong>Data:</strong> ${movimentacao.data}</p>
+          `;
+         
+          movimentacaoList.appendChild(item);
+        });
+      }
+    };
+  </script>
+</body>
+</html>
