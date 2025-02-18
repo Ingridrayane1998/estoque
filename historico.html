@@ -16,10 +16,20 @@
       width: 80%;
       margin: 20px auto;
     }
+    .title-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .title {
-      text-align: center;
       font-size: 36px;
       margin-bottom: 20px;
+    }
+    .filters {
+      margin-bottom: 20px;
+    }
+    .filter {
+      margin-right: 10px;
     }
     .movimentacao-list {
       margin-top: 20px;
@@ -36,46 +46,102 @@
       color: #666;
       margin: 5px 0;
     }
+    .link-voltar, .btn-exportar, .btn-limpar {
+      display: inline-block;
+      padding: 10px;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .link-voltar { background-color: #008CBA; }
+    .btn-exportar { background-color: #28a745; }
+    .btn-limpar { background-color: #d9534f; }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="index.html" class="link-voltar">Voltar para a Loja</a>
-    <h1 class="title">Histórico de Movimentações</h1>
+    <div class="title-container">
+      <a href="index.html" class="link-voltar">Voltar para a Loja</a>
+      <div class="title">Histórico de Movimentações</div>
+      <a href="#" class="btn-exportar" id="btn-exportar">Exportar CSV</a>
+    </div>
 
+    <div class="filters">
+      <input type="date" id="filter-data" class="filter" placeholder="Filtrar por Data">
+    </div>
 
     <div class="movimentacao-list" id="movimentacao-list"></div>
+    <a href="#" class="btn-limpar" id="btn-limpar">Zerar Registros</a>
   </div>
 
-
   <script>
-    // Função para carregar e exibir as movimentações salvas no localStorage
-    window.onload = function() {
-      const movimentacoes = JSON.parse(localStorage.getItem("movimentacoes")) || [];
+    function filtrarMovimentacoes(movimentacoes, dataFiltro) {
+      return movimentacoes.filter(mov => !dataFiltro || mov.data.startsWith(dataFiltro));
+    }
+
+    function exibirMovimentacoes(movimentacoes) {
       const movimentacaoList = document.getElementById("movimentacao-list");
-
-
-      // Se não houver movimentações, exibe uma mensagem
+      movimentacaoList.innerHTML = '';
+      
       if (movimentacoes.length === 0) {
         movimentacaoList.innerHTML = '<p>Não há movimentações registradas.</p>';
-      } else {
-        // Exibe as movimentações
-        movimentacoes.forEach(movimentacao => {
-          const item = document.createElement("div");
-          item.classList.add("movimentacao-item");
-
-
-          item.innerHTML = `
-            <p><strong>Produto:</strong> ${movimentacao.produto}</p>
-            <p><strong>Categoria:</strong> ${movimentacao.categoria}</p>
-            <p><strong>Ação:</strong> ${movimentacao.tipo}</p>
-            <p><strong>Quantidade:</strong> ${movimentacao.quantidade}</p>
-            <p><strong>Data:</strong> ${movimentacao.data}</p>
-          `;
-         
-          movimentacaoList.appendChild(item);
-        });
+        return;
       }
+
+      movimentacoes.forEach(mov => {
+        const item = document.createElement("div");
+        item.classList.add("movimentacao-item");
+        item.innerHTML = `
+          <p><strong>Produto:</strong> ${mov.produto}</p>
+          <p><strong>Categoria:</strong> ${mov.categoria}</p>
+          <p><strong>Ação:</strong> ${mov.acao === 'adicionar' ? 'Entrada' : 'Saída'}</p>
+          <p><strong>Quantidade:</strong> ${mov.quantidade}</p>
+          <p><strong>Data:</strong> ${mov.data}</p>
+        `;
+        movimentacaoList.appendChild(item);
+      });
+    }
+
+    function gerarCSV(movimentacoes) {
+      const csvContent = ["Produto,Categoria,Ação,Quantidade,Data"].concat(
+        movimentacoes.map(mov => `${mov.produto},${mov.categoria},${mov.acao},${mov.quantidade},${mov.data}`)
+      ).join("\n");
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "movimentacoes.csv";
+      link.click();
+    }
+
+    function limparRegistros() {
+      if (confirm("Tem certeza que deseja apagar todos os registros?")) {
+        localStorage.removeItem("movimentacoes");
+        alert("Registros apagados com sucesso!");
+        location.reload();
+      }
+    }
+
+    window.onload = function() {
+      const movimentacoes = JSON.parse(localStorage.getItem("movimentacoes")) || [];
+      const filtroData = document.getElementById("filter-data");
+      
+      filtroData.addEventListener("input", function() {
+        const filtradas = filtrarMovimentacoes(movimentacoes, filtroData.value);
+        exibirMovimentacoes(filtradas);
+      });
+
+      document.getElementById("btn-exportar").addEventListener("click", function() {
+        gerarCSV(movimentacoes);
+      });
+      
+      document.getElementById("btn-limpar").addEventListener("click", function() {
+        limparRegistros();
+      });
+      
+      exibirMovimentacoes(movimentacoes);
     };
   </script>
 </body>
