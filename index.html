@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Estoque</title>
+    <style>
+        /* Reset e estilo base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container do formulário */
+        .login-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+
+        .login-container button {
+            padding: 12px 0;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-container button:hover {
+            background-color: #007ba7;
+        }
+
+        .error-message {
+            color: red;
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Formulário de login -->
+    <div class="login-container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Usuário" required>
+        <input type="password" id="password" placeholder="Senha" required>
+        <button onclick="login()">Entrar</button>
+        <div id="error-message" class="error-message">Usuário ou senha incorretos</div>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const correctUsername = 'admin';  // Substitua com seu usuário real
+            const correctPassword = '1234';  // Substitua com sua senha real
+
+            // Validação de login
+            if (username === correctUsername && password === correctPassword) {
+                // Redirecionar para a página menu.html após login bem-sucedido
+                window.location.href = 'menu.html';
+            } else {
+                document.getElementById('error-message').style.display = 'block'; // Exibir mensagem de erro
+            }
+        }
+    </script>
+
+</body>
+</html>
