@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movimentações do Estoque</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Helvetica', sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    .title {
+      text-align: center;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .link-voltar {
+      display: inline-block;
+      padding: 10px;
+      background-color: #008CBA;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .product-card {
+      background-color: #fff;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: scale(1.01);
+    }
+    .btn {
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: none;
+      color: white;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .btn:active {
+      transform: scale(0.95);
+    }
+    .btn-add {
+      background-color: #4CAF50;
+    }
+    .btn-remove {
+      background-color: #f44336;
+    }
+    .btn-delete {
+      background-color: #000;
+    }
+    .btn-edit {
+      background-color: #FFA500;
+    }
+    .input-quantity {
+      width: 50px;
+      text-align: center;
+    }
+    .form-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .form-container input,
+    .form-container select {
+      display: block;
+      margin-bottom: 10px;
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .movimentacao-list {
+      margin-top: 30px;
+    }
+    .date-input {
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .categoria-container {
+      margin-bottom: 20px;
+    }
+    .categoria-container h3 {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+    .estoque-baixo {
+    background-color: #ffb6c1; /* Cor amarela clara */
+    border-left: 5px solid #ec5353; /* Borda amarela para destaque */
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="title">Movimentações do Estoque</h1>
+  <p><a href="index.html" class="link-voltar">Voltar para a Loja</a></p>
+  <div class="container">
+
+    <!-- Botão para gerar e baixar o relatório no topo -->
+    <button class="btn btn-add" oncli
+    ck="gerarRelatorioEstoque()">
+      <i class="fa fa-download"></i> Baixar Relatório de Estoque
+    </button>
+
+  <!-- Formulário para adicionar ou editar um produto -->
+  <div class="form-container">
+    <h3>Adicionar / Editar Produto</h3>
+    <input type="hidden" id="edit-id">
+    <input type="text" id="produto-nome" placeholder="Nome do Produto">
+    <input type="number" id="produto-quantidade" placeholder="Quantidade" min="0">
+    <input type="text" id="produto-foto" placeholder="URL da Foto do Produto">
+    <select id="produto-categoria">
+      <option value="">Selecione uma Categoria</option>
+      <option value="Bebidas">Bebidas</option>
+      <option value="Limpeza">Limpeza</option>
+      <option value="Banheiro">Banheiro</option>
+      <option value="Farmácia">Farmácia</option>
+      <option value="Copa">Copa</option>
+      <option value="Snacks">Snacks</option>
+    </select>
+    <input type="number" id="produto-limite" placeholder="Limite de Estoque" min="0">
+    <button class="btn btn-add" onclick="salvarProduto()">
+      <i class="fa fa-plus"></i> Salvar
+    </button>
+  </div>
+
+
+  <!-- Filtro de Estoque por Categoria e listagem de produtos -->
+  <div class="form-container">
+    <h3>Filtrar por Categoria</h3>
+    <select id="estoque-categoria-filtro">
+      <option value="">Todas</option>
+      <option value="bebidas">Bebidas</option>
+      <option value="limpeza">Limpeza</option>
+      <option value="banheiro">Banheiro</option>
+      <option value="farmácia">Farmácia</option>
+      <option value="copa">Copa</option>
+      <option value="snacks">Snacks</option>
+    </select>
+    <button class="btn btn-add" onclick="atualizarEstoque()">
+      <i class="fa fa-filter"></i> Filtrar
+    </button>
+    <div id="estoque-list"></div>
+  </div>
+
+
+  <!-- Filtro de Data para o Histórico -->
+  <div class="form-container">
+    <h3>Consultar Histórico por Data</h3>
+    <input type="date" id="data-consulta" class="date-input">
+    <button class="btn btn-add" onclick="consultarHistorico()">
+      <i class="fa fa-search"></i> Consultar
+    </button>
+  </div>
+
+
+  <!-- Histórico de Movimentações -->
+  <h3>Histórico de Movimentações</h3>
+  <div id="movimentacoes-list" class="movimentacao-list"></div>
+</div>
+
+
+<script>
+  let estoque = JSON.parse(localStorage.getItem("estoque")) || {};
+  let movimentacoes = JSON.parse(localStorage.getItem("movimentacoes")) || [];
+
+
+  // Função para formatar a data no formato "dd/MM/yyyy, HH:mm:ss"
+  function formatarData(data) {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    return new Date(data).toLocaleString('pt-BR', options);
+  }
+// Função para gerar o relatório de estoque em formato CSV
+function gerarRelatorioEstoque() {
+    const limiteEstoque = 10;  // Defina seu limite aqui ou faça com que cada produto tenha seu limite
+    let csvContent = "Nome do Produto,Quantidade,Categoria,Estoque Baixo\n";
+
+    for (let produtoId in estoque) {
+        const produto = estoque[produtoId];
+        const estoqueBaixo = produto.quantidade <= limiteEstoque ? "Sim" : "Não"; // Verifica se o estoque está baixo
+        csvContent += `${produto.nome},${produto.quantidade},${produto.categoria},${estoqueBaixo}\n`;
+    }
+
+    // Criar um arquivo Blob com o conteúdo do CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+
+    // Usar o URL.createObjectURL para criar um link para o Blob
+    if (navigator.msSaveBlob) { // Para IE
+        navigator.msSaveBlob(blob, "relatorio_estoque.csv");
+    } else {
+        link.href = URL.createObjectURL(blob);
+        link.download = "relatorio_estoque.csv";
+        link.click();
+    }
+}
+
+
+  // Atualiza o estoque agrupando por categoria e aplicando o filtro, se definido
+  function atualizarEstoque() {
+    setTimeout(() => {
+        const estoqueList = document.getElementById("estoque-list");
+        estoqueList.innerHTML = '';
+        const filtroCat = document.getElementById("estoque-categoria-filtro").value.trim().toLowerCase();
+        const categorias = {};
+        for (let produtoId in estoque) {
+            const produto = estoque[produtoId];
+            let catOriginal = produto.categoria || "Sem Categoria";
+            let catFilter = catOriginal.trim().toLowerCase();
+            if (filtroCat && catFilter !== filtroCat) continue;
+            if (!categorias[catFilter]) {
+                categorias[catFilter] = { display: catOriginal, items: [] };
+            }
+            categorias[catFilter].items.push({ produtoId, produto });
+        }
+        for (let cat in categorias) {
+            const catContainer = document.createElement("div");
+            catContainer.classList.add("categoria-container");
+            catContainer.innerHTML = `<h3>${categorias[cat].display}</h3>`;
+            categorias[cat].items.forEach(({ produtoId, produto }) => {
+                const div = document.createElement("div");
+                
+                // Se a quantidade do produto for menor ou igual ao limite de estoque
+                if (produto.quantidade <= produto.limiteEstoque) {
+                    div.classList.add("product-card", "estoque-baixo"); // Aplica a classe para estoque baixo
+                } else {
+                    div.classList.add("product-card"); // Não aplica a classe para produtos com estoque normal
+                }
+
+                div.innerHTML = `
+                    <div>
+                        <strong>${produto.nome}</strong> (Qtd: ${produto.quantidade})
+                        ${produto.foto ? `<br><img src="${produto.foto}" alt="${produto.nome}" style="max-width:100px;">` : ""}
+                    </div>
+                    <div>
+                        <button class="btn btn-add" onclick="modificarQuantidade('${produtoId}', 1, '${produto.categoria}', 'adicionar')">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                        <input type="number" class="input-quantity" id="quantidade-${produtoId}" value="1" min="1">
+                        <button class="btn btn-remove" onclick="modificarQuantidade('${produtoId}', -1, '${produto.categoria}', 'remover')">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                        <button class="btn btn-edit" onclick="editarProduto('${produtoId}')">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button class="btn btn-delete" onclick="excluirProduto('${produtoId}')">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                catContainer.appendChild(div);
+            });
+            estoqueList.appendChild(catContainer);
+        }
+    }, 100);
+}
+
+
+
+  // Adiciona ou edita um produto
+  function salvarProduto() {
+   const produtoId = document.getElementById("edit-id").value || Date.now().toString();
+   const nome = document.getElementById("produto-nome").value.trim();
+   const quantidade = parseInt(document.getElementById("produto-quantidade").value) || 0;
+   const foto = document.getElementById("produto-foto").value.trim();
+   const categoria = document.getElementById("produto-categoria").value.trim();
+   const limiteEstoque = parseInt(document.getElementById("produto-limite").value) || 0; // Novo campo para limite de estoque
+
+   if (!nome || !quantidade || !categoria) {
+      alert("Por favor, preencha todos os campos.");
+      return;
+   }
+
+   estoque[produtoId] = { nome, quantidade, foto, categoria, limiteEstoque }; // Adicionando limiteEstoque
+
+   localStorage.setItem("estoque", JSON.stringify(estoque));
+
+   const movimentacao = {
+      produto: nome,
+      quantidade,
+      categoria,
+      data: formatarData(new Date()), // Usando a função formatarData
+      acao: "adicionar"
+   };
+
+   movimentacoes.push(movimentacao);
+   localStorage.setItem("movimentacoes", JSON.stringify(movimentacoes));
+
+   alert("Produto salvo com sucesso.");
+   resetForm();
+   atualizarEstoque();
+}
+
+
+
+  // Limpa o formulário após salvar
+  function resetForm() {
+    document.getElementById("produto-nome").value = "";
+    document.getElementById("produto-quantidade").value = "";
+    document.getElementById("produto-foto").value = "";
+    document.getElementById("produto-categoria").value = "";
+    document.getElementById("edit-id").value = "";
+  }
+ 
+  // Funções adicionais para manipular o estoque, editar e excluir produtos.
+  function editarProduto(produtoId) {
+    const produto = estoque[produtoId];
+    document.getElementById("edit-id").value = produtoId;
+    document.getElementById("produto-nome").value = produto.nome;
+    document.getElementById("produto-quantidade").value = produto.quantidade;
+    document.getElementById("produto-foto").value = produto.foto;
+    document.getElementById("produto-categoria").value = produto.categoria;
+  }
+
+
+  function excluirProduto(produtoId) {
+    if (confirm("Tem certeza que deseja excluir este produto?")) {
+      delete estoque[produtoId];
+      localStorage.setItem("estoque", JSON.stringify(estoque));
+      atualizarEstoque();
+    }
+  }
+
+
+  // Função para adicionar ou remover quantidade
+  function modificarQuantidade(produtoId, valor, categoria, acao) {
+    const produto = estoque[produtoId];
+    if (!produto) return;
+    produto.quantidade += valor;
+    if (produto.quantidade < 0) produto.quantidade = 0;
+    localStorage.setItem("estoque", JSON.stringify(estoque));
+
+
+    const movimentacao = {
+      produto: produto.nome,
+      quantidade: valor,
+      categoria,
+      data: formatarData(new Date()), // Usando a função formatarData
+      acao
+    };
+
+
+    movimentacoes.push(movimentacao);
+    localStorage.setItem("movimentacoes", JSON.stringify(movimentacoes));
+    atualizarEstoque();
+  }
+
+
+  // Exibe o histórico de movimentações
+  function consultarHistorico() {
+    const dataConsulta = document.getElementById("data-consulta").value;
+    const movimentacoesList = document.getElementById("movimentacoes-list");
+    movimentacoesList.innerHTML = '';
+
+
+    const filtrado = movimentacoes.filter(mov => {
+      const dataMov = new Date(mov.data).toISOString().split("T")[0];
+      return !dataConsulta || dataMov === dataConsulta;
+    });
+
+
+    filtrado.forEach(mov => {
+      const div = document.createElement("div");
+      div.classList.add("product-card");
+      div.innerHTML = `
+        <div>
+          <strong>${mov.produto}</strong>
+          <br>
+          Quantidade: ${mov.quantidade}
+          <br>
+          Categoria: ${mov.categoria}
+        </div>
+        <div>
+          Ação: ${mov.acao} | Data: ${mov.data}
+        </div>
+      `;
+      movimentacoesList.appendChild(div);
+    });
+  }
+
+
+  // Inicializa o estoque ao carregar a página
+  atualizarEstoque();
+</script>
+</body>
+</html>
