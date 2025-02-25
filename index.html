@@ -77,25 +77,38 @@
         <h2>Login</h2>
         <input type="text" id="username" placeholder="Usuário" required>
         <input type="password" id="password" placeholder="Senha" required>
-        <button onclick="login()">Entrar</button>
+        <button id="loginButton">Entrar</button>
         <div id="error-message" class="error-message">Usuário ou senha incorretos</div>
     </div>
 
     <script>
+        // Função de login
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const correctUsername = 'admin';  // Substitua com seu usuário real
-            const correctPassword = '1234';  // Substitua com sua senha real
 
-            // Validação de login
-            if (username === correctUsername && password === correctPassword) {
+            // Definir os usuários e senhas corretos
+            const users = {
+                'admin': '1234',  // Usuário: admin, Senha: 1234
+                'maite': '1234',  // Usuário: maite, Senha: 1234
+                // Adicione outros usuários e senhas conforme necessário
+            };
+
+            // Verificar se o nome de usuário existe e se a senha está correta
+            if (users[username] && users[username] === password) {
+                // Armazenar o nome do usuário no localStorage
+                localStorage.setItem('username', username);
+                console.log('Nome de usuário armazenado:', username);  // Verifique no console se o nome de usuário está sendo armazenado
+
                 // Redirecionar para a página menu.html após login bem-sucedido
                 window.location.href = 'menu.html';
             } else {
                 document.getElementById('error-message').style.display = 'block'; // Exibir mensagem de erro
             }
         }
+
+        // Lidar com o clique no botão de login
+        document.getElementById('loginButton').addEventListener('click', login);
     </script>
 
 </body>
