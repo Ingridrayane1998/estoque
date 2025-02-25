@@ -106,13 +106,31 @@
     background-color: #ffb6c1; /* Cor amarela clara */
     border-left: 5px solid #ec5353; /* Borda amarela para destaque */
 }
+.btn-confirm {
+  background-color: #28a745; /* Verde */
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn-confirm:hover {
+  background-color: #218838; /* Verde mais escuro ao passar o mouse */
+}
+
+.btn-confirm:active {
+  transform: scale(0.95);
+}
+
 
   </style>
 </head>
 <body>
 <div class="container">
   <h1 class="title">Movimentações do Estoque</h1>
-  <p><a href="index.html" class="link-voltar">Voltar para a Loja</a></p>
+  <p><a href="menu.html" class="link-voltar">Voltar para a Loja</a></p>
   <div class="container">
 
     <!-- Botão para gerar e baixar o relatório no topo -->
@@ -265,6 +283,10 @@ function gerarRelatorioEstoque() {
                         <button class="btn btn-delete" onclick="excluirProduto('${produtoId}')">
                             <i class="fa fa-trash"></i>
                         </button>
+                        <button class="btn btn-confirm" onclick="confirmarQuantidade('${produtoId}', '${produto.categoria}')">
+                        <i class="fa fa-check"></i>
+                        </button>
+                        
                     </div>
                 `;
                 catContainer.appendChild(div);
@@ -400,6 +422,20 @@ function gerarRelatorioEstoque() {
 
   // Inicializa o estoque ao carregar a página
   atualizarEstoque();
+
+  function confirmarQuantidade(produtoId, categoria) {
+    let inputQuantidade = document.getElementById(`quantidade-${produtoId}`);
+    let quantidade = parseInt(inputQuantidade.value);
+
+    if (isNaN(quantidade) || quantidade <= 0) {
+        alert("Digite uma quantidade válida!");
+        return;
+    }
+
+    modificarQuantidade(produtoId, quantidade, categoria, 'adicionar'); // Adiciona a quantidade digitada
+    inputQuantidade.value = 1; // Reseta o campo para o padrão
+}
+
 </script>
 </body>
 </html>
